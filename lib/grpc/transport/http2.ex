@@ -131,13 +131,22 @@ defmodule GRPC.Transport.HTTP2 do
   end
 
   defp encode_metadata_pair({key, val}) do
-    val = if String.ends_with?(key, "-bin"), do: Base.encode64(val), else: val
+    # Implementations ... should emit un-padded values
+    val = if String.ends_with?(key, "-bin"), do: Base.encode64(val, padding: false), else: val
     {String.downcase(to_string(key)), val}
   end
 
-  defp decode_metadata({key, val}) do
-    val = if String.ends_with?(key, "-bin"), do: Base.decode64!(val, padding: false), else: val
-    {key, val}
+  defp decode_metadata(kv = {key, val}) do
+    # Implementations MUST accept padded and un-padded values
+    if String.ends_with?(key, "-bin") do
+      if rem(IO.iodata_length(val), 4) == 0 do
+        Base.decode64!(val)
+      else
+        Base.decode64!(val, padding: false)
+      end
+    else
+      kv
+    end
   end
 
   defp is_reserved_header(":" <> _), do: true

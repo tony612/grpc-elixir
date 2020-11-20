@@ -103,7 +103,7 @@ defmodule GRPC.Integration.CompressorTest do
       name = "both compress"
       req = Helloworld.HelloRequest.new(name: name)
 
-      assert {:error, %GRPC.RPCError{message: _, status: 12}} =
+      assert {:error, %GRPC.RPCError{message: _, status: 12}, _} =
                channel
                |> HelloStub.say_hello(req, compressor: GRPC.Compressor.Gzip, return_headers: true)
     end)

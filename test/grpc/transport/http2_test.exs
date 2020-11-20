@@ -45,7 +45,7 @@ defmodule GRPC.Transport.HTTP2Test do
       HTTP2.client_headers(stream, %{metadata: %{"key1-bin" => "abc", "key2-bin" => <<194, 128>>}})
 
     assert_header({"key1-bin", "YWJj"}, headers)
-    assert_header({"key2-bin", "woA="}, headers)
+    assert_header({"key2-bin", "woA"}, headers)
   end
 
   test "client_headers/3 rejects reserved headers in metadata" do
