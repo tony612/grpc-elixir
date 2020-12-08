@@ -3,7 +3,7 @@ defmodule GRPC.Stub do
   A module acting as the interface for gRPC client.
 
   You can do everything in the client side via `GRPC.Stub`, including connecting,
-  sending/receiving steaming or non-steaming requests, canceling calls and so on.
+  sending/receiving streaming or non-streaming requests, canceling calls and so on.
 
   A service is needed to define a stub:
 
@@ -121,7 +121,7 @@ defmodule GRPC.Stub do
     * `:interceptors` - client interceptors
     * `:codec` - client will use this to encode and decode binary message
     * `:compressor` - the client will use this to compress requests and decompress responses. If this is set, accepted_compressors
-        will be appended also, so this can be used safely without `:accesspted_compressors`.
+        will be appended also, so this can be used safely without `:accepted_compressors`.
     * `:accepted_compressors` - tell servers accepted compressors, this can be used without `:compressor`
     * `:headers` - headers to attach to each request
   """
