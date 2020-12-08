@@ -439,7 +439,7 @@ defmodule GRPC.Stub do
         {status, msg}
       end
     else
-      error = {:error, _} ->
+      {:error, _} = error ->
         error
     end
   end
@@ -465,6 +465,9 @@ defmodule GRPC.Stub do
 
       {:trailers, trailers} ->
         {:ok, acc, GRPC.Transport.HTTP2.decode_headers(trailers)}
+
+      err ->
+        err
     end
   end
 
