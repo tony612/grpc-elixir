@@ -8,7 +8,7 @@ defmodule Routeguide.App do
     import Supervisor.Spec
 
     children = [
-      supervisor(RouteGuide.Data, []),
+      supervisor(RouteGuide.DataHelper, []),
       supervisor(GRPC.Server.Supervisor, [start_args()])
     ]
 

@@ -1,0 +1,8 @@
+syntax = "proto3";
+
+import "coordinate.proto";
+
+message Rectangle {
+  Coordinate lo = 1;
+  Coordinate hi = 2;
+}

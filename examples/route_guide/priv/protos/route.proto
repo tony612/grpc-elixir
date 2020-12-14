@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+import "coordinate.proto";
+
+message RouteNote {
+  Coordinate coordinate = 1;
+  string message = 2;
+}
+
+message RouteSummary {
+  int32 coordinate_count = 1;
+  int32 locations_found = 2;
+  int32 distance = 3;
+  int32 elapsed_time = 4;
+}

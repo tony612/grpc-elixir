@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "io.grpc.examples.routeguide";
+option java_outer_classname = "RouteGuideProto";
+
+package routeguide;
+
+import "coordinate.proto";
+import "location.proto";
+import "rectangle.proto";
+import "route.proto";
+
+service RouteGuide {
+  rpc GetLocation(Coordinate) returns (Location) {}
+  rpc ListLocations(Rectangle) returns (stream Location) {}
+  rpc RecordRoute(stream Coordinate) returns (RouteSummary) {}
+  rpc RouteChat(stream RouteNote) returns (stream RouteNote) {}
+}

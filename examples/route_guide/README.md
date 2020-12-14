@@ -25,9 +25,18 @@ $ mix run priv/client.exs
 ```
 mix escript.install hex protobuf
 ```
-3. Generate the code:
+3. Compile protobuf code:
+
+Simple protobuf
+
 ```shell
-$ protoc -I priv --elixir_out=plugins=grpc:./lib/ priv/route_guide.proto
+protoc -I ./priv/protos --elixir_out=./lib/protos ./priv/protos/*.proto
+```
+
+Service protobuf
+
+```shell
+protoc -I ./priv/protos --elixir_out=plugins=grpc:./lib/protos ./priv/protos/service.proto
 ```
 
 Refer to [protobuf-elixir](https://github.com/tony612/protobuf-elixir#usage) for more information.

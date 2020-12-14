@@ -1,0 +1,8 @@
+syntax = "proto3";
+
+import "coordinate.proto";
+
+message Location {
+  string name = 1;
+  Coordinate coordinate = 2;
+}
