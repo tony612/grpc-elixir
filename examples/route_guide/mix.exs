@@ -31,7 +31,7 @@ defmodule RouteGuide.Mixfile do
     [
       {:grpc, path: "../../"},
       {:poison, "~> 3.0"},
-      {:cowlib, "~> 2.8.0", hex: :grpc_cowlib, override: true},
+      {:cowlib, "~> 2.9.0", override: true},
       {:dialyxir, "~> 0.5", only: [:dev, :test], runtime: false},
     ]
   end
