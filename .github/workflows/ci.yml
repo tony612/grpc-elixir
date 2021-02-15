@@ -12,15 +12,14 @@ jobs:
   check_format:
     runs-on: ubuntu-latest
     name: Check format
-    container:
-      image: elixir:1.9-slim
     steps:
-      - uses: actions/checkout@v1
-      - name: Install Dependencies
-        run: |
-          mix local.rebar --force
-          mix local.hex --force
-          mix deps.get
+      - uses: actions/checkout@v2
+      - uses: erlef/setup-elixir@v1
+        with:
+          otp-version: '23.2.4'
+          elixir-version: '1.11.3'
+      - name: Install dependencies
+        run: mix deps.get
       - name: Check format
         run: mix format --check-formatted
 
@@ -29,39 +28,32 @@ jobs:
     name: OTP ${{matrix.otp}} / Elixir ${{matrix.elixir}}
     strategy:
       matrix:
-        otp: [20.x, 21.x, 22.x]
-        elixir: [1.7.x, 1.8.x, 1.9.x, 1.10.x]
-        exclude:
-          - otp: 20.x
-            elixir: 1.10.x
+        otp: [21.x, 22.x, 23.x]
+        elixir: [1.7.x, 1.8.x, 1.9.x, 1.10.x, 1.11.x]
     needs: check_format
     steps:
-    - uses: actions/checkout@v1
-    - uses: actions/setup-elixir@v1.2.0
+    - uses: actions/checkout@v2
+    - uses: erlef/setup-elixir@v1
       with:
         otp-version: ${{matrix.otp}}
         elixir-version: ${{matrix.elixir}}
-    - name: Install Dependencies
-      run: |
-        mix local.rebar --force
-        mix local.hex --force
-        mix deps.get
-    - name: Run Tests
+    - name: Install dependencies
+      run: mix deps.get
+    - name: Run tests
       run: mix test
 
   interop-tests:
     runs-on: ubuntu-latest
     name: Interop tests
-    container:
-      image: elixir:1.9-slim
     needs: check_format
     steps:
-    - uses: actions/checkout@v1
-    - name: Install Dependencies
-      run: |
-        mix local.rebar --force
-        mix local.hex --force
-        mix deps.get
+    - uses: actions/checkout@v2
+    - uses: erlef/setup-elixir@v1
+      with:
+        otp-version: '23.2.4'
+        elixir-version: '1.11.3'
+    - name: Install dependencies
+      run: mix deps.get
       working-directory: ./interop
     - name: Run interop tests
       run: mix run script/run.exs
@@ -71,15 +63,14 @@ jobs:
     runs-on: ubuntu-latest
     name: Check release
     needs: check_format
-    container:
-      image: elixir:1.9-slim
     steps:
-      - uses: actions/checkout@v1
-      - name: Install Dependencies
-        run: |
-          mix local.rebar --force
-          mix local.hex --force
-          mix deps.get
+      - uses: actions/checkout@v2
+      - uses: erlef/setup-elixir@v1
+        with:
+          otp-version: '23.2.4'
+          elixir-version: '1.11.3'
+      - name: Install dependencies
+        run: mix deps.get
       - name: Build hex
         run: mix hex.build
       - name: Generate docs

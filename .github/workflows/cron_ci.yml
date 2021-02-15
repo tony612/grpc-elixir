@@ -8,15 +8,14 @@ jobs:
   interop-tests:
     runs-on: ubuntu-latest
     name: Interop tests
-    container:
-      image: elixir:1.9
     steps:
-    - uses: actions/checkout@v1
-    - name: Install Dependencies
-      run: |
-        mix local.rebar --force
-        mix local.hex --force
-        mix deps.get
+    - uses: actions/checkout@v2
+    - uses: erlef/setup-elixir@v1
+      with:
+        otp-version: '23.2.4'
+        elixir-version: '1.11.3'
+    - name: Install dependencies
+      run: mix deps.get
       working-directory: ./interop
     - name: Run Cron CI
       run: make ci-cron
