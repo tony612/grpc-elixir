@@ -107,16 +107,23 @@ defmodule GRPC.Server do
          %{request_mod: req_mod, codec: codec, adapter: adapter, payload: payload} = stream,
          func_name
        ) do
-    {:ok, data} = adapter.read_body(payload)
 
-    case GRPC.Message.from_data(stream, data) do
-      {:ok, message} ->
-        request = codec.decode(message, req_mod)
+    try do
+      {:ok, data} = adapter.read_body(payload)
 
-        call_with_interceptors(res_stream, func_name, stream, request)
+      case GRPC.Message.from_data(stream, data) do
+        {:ok, message} ->
+          request = codec.decode(message, req_mod)
 
-      resp = {:error, _} ->
-        resp
+          call_with_interceptors(res_stream, func_name, stream, request)
+
+        resp = {:error, _} ->
+          resp
+      end
+    rescue
+      err ->
+        report_to_exception_sinks(stream, err, __STACKTRACE__)
+        reraise err, __STACKTRACE__
     end
   end
 
@@ -199,6 +206,10 @@ defmodule GRPC.Server do
         Map.get(endpoint.__meta__(:server_interceptors), server, [])
 
     interceptors |> Enum.reverse()
+  end
+
+  defp exception_sinks(endpoint) do
+    endpoint.__meta__(:exception_sinks) |> Enum.reverse()
   end
 
   # Start the gRPC server. Only used in starting a server manually using `GRPC.Server.start(servers)`
@@ -337,6 +348,12 @@ defmodule GRPC.Server do
   def servers_to_map(servers) do
     Enum.reduce(List.wrap(servers), %{}, fn s, acc ->
       Map.put(acc, s.__meta__(:service).__meta__(:name), s)
+    end)
+  end
+
+  defp report_to_exception_sinks(%{endpoint: endpoint}, error, stack_trace) do
+    exception_sinks(endpoint) |> Enum.each(fn exception_sink ->
+      exception_sink.error(error, stack_trace)
     end)
   end
 end

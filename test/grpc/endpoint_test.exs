@@ -17,6 +17,17 @@ defmodule GRPC.EndpointTest do
     def init(opts), do: opts
   end
 
+  defmodule ExceptionSink1 do
+    def init(_), do: nil
+    def error(_), do: nil
+  end
+
+  defmodule ExceptionSink2 do
+    def init(opts), do: opts
+    def error(_), do: nil
+  end
+
+
   defmodule FooEndpoint do
     use GRPC.Endpoint
 
@@ -40,5 +51,18 @@ defmodule GRPC.EndpointTest do
 
     assert %{Server1 => [{Interceptor3, [foo: :bar]}], Server2 => mw, Server3 => mw} ==
              FooEndpoint.__meta__(:server_interceptors)
+  end
+
+  defmodule EndpointWithExceptionSink do
+    use GRPC.Endpoint
+
+    exception_sink ExceptionSink1
+    exception_sink ExceptionSink2, foo: 1
+
+    run ServerThatProducesException
+  end
+
+  test "defining exception sinks works" do
+    assert [{ExceptionSink1, nil}, {ExceptionSink2, [foo: 1]}] == EndpointWithExceptionSink .__meta__(:exception_sinks)
   end
 end
