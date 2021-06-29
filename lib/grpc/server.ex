@@ -88,9 +88,20 @@ defmodule GRPC.Server do
         {_, {req_mod, req_stream}, {res_mod, res_stream}} = rpc,
         func_name
       ) do
-    stream = %{stream | request_mod: req_mod, response_mod: res_mod, rpc: rpc}
+        request_id = generate_request_id()
+    stream = %{stream | request_mod: req_mod, request_id: request_id, response_mod: res_mod, rpc: rpc}
 
     handle_request(req_stream, res_stream, stream, func_name)
+  end
+
+  defp generate_request_id do
+    binary = <<
+      System.system_time(:nanosecond)::64,
+      :erlang.phash2({node(), self()}, 16_777_216)::24,
+      :erlang.unique_integer()::32
+    >>
+
+    Base.url_encode64(binary)
   end
 
   defp handle_request(req_s, res_s, %{server: server} = stream, func_name) do
