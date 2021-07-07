@@ -33,12 +33,12 @@ defmodule GRPC.Server do
 
   require Logger
 
-  alias GRPC.Server.Stream
   alias GRPC.RPCError
+  alias GRPC.ServerAdapter
 
   @type rpc_req :: struct | Enumerable.t()
   @type rpc_return :: struct | any
-  @type rpc :: (GRPC.Server.rpc_req(), Stream.t() -> rpc_return)
+  @type rpc :: (GRPC.Server.rpc_req(), stream -> rpc_return)
 
   defmacro __using__(opts) do
     quote bind_quoted: [opts: opts], location: :keep do
@@ -77,11 +77,15 @@ defmodule GRPC.Server do
     end
   end
 
-  @type servers_map :: %{String.t() => [module]}
+  @type endpoint :: ServerAdapter.endpoint()
+  @type server_port :: ServerAdapter.server_port()
   @type servers_list :: module | [module]
+  @type servers_map :: ServerAdapter.servers_map()
+  @type stream :: ServerAdapter.stream()
+  @type headers :: ServerAdapter.headers()
 
   @doc false
-  @spec call(atom, Stream.t(), tuple, atom) :: {:ok, Stream.t(), struct} | {:ok, struct}
+  @spec call(atom, stream, tuple, atom) :: {:ok, stream, struct} | {:ok, struct}
   def call(
         _service_mod,
         stream,
@@ -216,7 +220,7 @@ defmodule GRPC.Server do
   #               an insecure server will be created without this option
   #   * `:adapter` - use a custom server adapter instead of default `GRPC.Adapter.Cowboy`
   @doc false
-  @spec start(servers_list, non_neg_integer, Keyword.t()) :: {atom, any, non_neg_integer}
+  @spec start(servers_list, server_port, Keyword.t()) :: {atom, any, non_neg_integer}
   def start(servers, port, opts \\ []) do
     adapter = Keyword.get(opts, :adapter, GRPC.Adapter.Cowboy)
     servers = GRPC.Server.servers_to_map(servers)
@@ -224,7 +228,7 @@ defmodule GRPC.Server do
   end
 
   @doc false
-  @spec start_endpoint(atom, non_neg_integer, Keyword.t()) :: {atom, any, non_neg_integer}
+  @spec start_endpoint(endpoint, server_port, Keyword.t()) :: {atom, any, non_neg_integer}
   def start_endpoint(endpoint, port, opts \\ []) do
     servers = endpoint.__meta__(:servers)
     servers = GRPC.Server.servers_to_map(servers)
@@ -250,7 +254,7 @@ defmodule GRPC.Server do
   end
 
   @doc false
-  @spec stop_endpoint(atom, Keyword.t()) :: any
+  @spec stop_endpoint(endpoint, Keyword.t()) :: any
   def stop_endpoint(endpoint, opts \\ []) do
     adapter = Keyword.get(opts, :adapter, GRPC.Adapter.Cowboy)
     servers = endpoint.__meta__(:servers)
@@ -273,7 +277,7 @@ defmodule GRPC.Server do
 
       iex> GRPC.Server.send_reply(stream, reply)
   """
-  @spec send_reply(Stream.t(), struct) :: Stream.t()
+  @spec send_reply(stream, struct) :: stream
   def send_reply(%{__interface__: interface} = stream, reply, opts \\ []) do
     interface[:send_reply].(stream, reply, opts)
   end
@@ -283,7 +287,7 @@ defmodule GRPC.Server do
 
   You can send headers only once, before that you can set headers using `set_headers/2`.
   """
-  @spec send_headers(Stream.t(), map) :: Stream.t()
+  @spec send_headers(stream, headers) :: stream
   def send_headers(%{adapter: adapter} = stream, headers) do
     adapter.send_headers(stream.payload, headers)
     stream
@@ -294,7 +298,7 @@ defmodule GRPC.Server do
 
   You can set headers more than once.
   """
-  @spec set_headers(Stream.t(), map) :: Stream.t()
+  @spec set_headers(stream, headers) :: stream
   def set_headers(%{adapter: adapter} = stream, headers) do
     adapter.set_headers(stream.payload, headers)
     stream
@@ -303,7 +307,7 @@ defmodule GRPC.Server do
   @doc """
   Set custom trailers, which will be sent in the end.
   """
-  @spec set_trailers(Stream.t(), map) :: Stream.t()
+  @spec set_trailers(stream, headers) :: stream
   def set_trailers(%{adapter: adapter} = stream, trailers) do
     adapter.set_resp_trailers(stream.payload, trailers)
     stream
@@ -313,7 +317,7 @@ defmodule GRPC.Server do
   Set compressor to compress responses. An accepted compressor will be set if clients use one,
   even if `set_compressor` is not called. But this can be called to override the chosen.
   """
-  @spec set_compressor(Stream.t(), module) :: Stream.t()
+  @spec set_compressor(stream, module) :: stream
   def set_compressor(%{adapter: adapter} = stream, compressor) do
     adapter.set_compressor(stream.payload, compressor)
     stream

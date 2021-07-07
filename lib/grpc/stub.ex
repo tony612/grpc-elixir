@@ -98,6 +98,8 @@ defmodule GRPC.Stub do
     end
   end
 
+  @type channel :: GRPC.ClientAdapter.channel()
+
   @doc """
   Establish a connection with gRPC server and return `GRPC.Channel` needed for
   sending requests.
@@ -125,7 +127,7 @@ defmodule GRPC.Stub do
     * `:accepted_compressors` - tell servers accepted compressors, this can be used without `:compressor`
     * `:headers` - headers to attach to each request
   """
-  @spec connect(String.t(), Keyword.t()) :: {:ok, GRPC.Channel.t()} | {:error, any}
+  @spec connect(String.t(), Keyword.t()) :: {:ok, channel} | {:error, any}
   def connect(addr, opts \\ []) when is_binary(addr) and is_list(opts) do
     {host, port} =
       case String.split(addr, ":") do
@@ -137,7 +139,7 @@ defmodule GRPC.Stub do
   end
 
   @spec connect(String.t(), binary | non_neg_integer, keyword) ::
-          {:ok, Channel.t()} | {:error, any}
+          {:ok, channel} | {:error, any}
   def connect(host, port, opts) when is_binary(port) do
     connect(host, String.to_integer(port), opts)
   end
@@ -210,7 +212,7 @@ defmodule GRPC.Stub do
   @doc """
   Disconnects the adapter and frees any resources the adapter is consuming
   """
-  @spec disconnect(Channel.t()) :: {:ok, Channel.t()} | {:error, any}
+  @spec disconnect(channel) :: {:ok, channel} | {:error, any}
   def disconnect(%Channel{adapter: adapter} = channel) do
     adapter.disconnect(channel)
   end

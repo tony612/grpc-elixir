@@ -1,6 +1,8 @@
 defmodule GRPC.Adapter.Cowboy do
   @moduledoc false
 
+  @behaviour GRPC.ServerAdapter
+
   # A server(`GRPC.Server`) adapter using Cowboy.
   # Cowboy req will be stored in `:payload` of `GRPC.Server.Stream`.
 

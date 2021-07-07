@@ -1,6 +1,8 @@
 defmodule GRPC.Adapter.Gun do
   @moduledoc false
 
+  @behaviour GRPC.ClientAdapter
+
   # A client adapter using Gun.
   # conn_pid and stream_ref is stored in `GRPC.Server.Stream`.
 

@@ -1,8 +1,12 @@
 defmodule GRPC.Test.ClientAdapter do
+  @behaviour GRPC.ClientAdapter
+
   def connect(channel, _opts), do: {:ok, channel}
 end
 
 defmodule GRPC.Test.ServerAdapter do
+  @behaviour GRPC.ServerAdapter
+
   def start(s, h, p, opts) do
     {s, h, p, opts}
   end
